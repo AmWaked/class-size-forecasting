@@ -9,11 +9,11 @@ pip install -r requirements.txt
 streamlit run app/main.py
 ```
 
-The interface accepts a course name, its initial enrollment, and its expected
-growth rate per semester. Choose a forecast horizon of 1–12 semesters to view
-the projected enrollment table and chart. The growth-rate baseline compounds
-each course's rate independently and rounds projections to the nearest student;
-it does not currently use the placeholder Markov or simulation models.
+The interface accepts initial enrollment counts for the CS1, CS2, CS3, and Done
+states. Choose a forecast horizon of 1–12 semesters to view the projected
+enrollment table and chart. The Markov forecast uses fixed probabilities: 20%
+of students remain in each course state, 80% advance to the next state, and
+students in Done remain there.
 
 ## Project structure
 

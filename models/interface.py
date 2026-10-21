@@ -22,7 +22,7 @@ class ForecastModel(ABC):
         """
 
     @abstractmethod
-    def predict(self, semesters_ahead: int = 1) -> List[Tuple[str, str, float]]:
+    def predict(self, semesters_ahead: int = 1) -> List[Tuple[str, int, float]]:
         """Produce enrollment forecasts.
 
         Parameters
@@ -31,5 +31,5 @@ class ForecastModel(ABC):
 
         Returns
         -------
-        list of (course, semester, projected_enrollment) tuples.
+        list of (course or state, semester number, projected_enrollment) tuples.
         """
