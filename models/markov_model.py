@@ -1,5 +1,7 @@
 """Four-state Markov chain calculations for course enrollment."""
 
+import numpy as np
+
 states = ("CS1", "CS2", "CS3", "Done")
 
 transition_matrix = (
@@ -11,14 +13,25 @@ transition_matrix = (
 
 
 def forecast_enrollment(students, transition_matrix):
-    """Project a state vector forward one semester using its transition matrix."""
+    """Forecast next-semester enrollment using NumPy."""
+
+    # Check that the matrix matches the number of states
     if not students or len(transition_matrix) != len(students):
         raise ValueError("The transition matrix must match the enrollment states.")
 
-    next_semester = [0.0] * len(students)
-    for state_index, row in enumerate(transition_matrix):
+    # Check that the transition matrix is square
+    for row in transition_matrix:
         if len(row) != len(students):
             raise ValueError("The transition matrix must be square.")
-        for next_state_index, probability in enumerate(row):
-            next_semester[next_state_index] += students[state_index] * probability
-    return next_semester
+
+    # Convert the student list into a NumPy array
+    student_vector = np.array(students)
+
+    # Convert the transition matrix into a NumPy array
+    transition_array = np.array(transition_matrix)
+
+    # Multiply the student vector by the transition matrix
+    next_semester = student_vector @ transition_array
+
+    # Return the predicted enrollment as a Python list
+    return next_semester.tolist()
