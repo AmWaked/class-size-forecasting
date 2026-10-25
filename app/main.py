@@ -4,7 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from models.markov import MarkovModel
-from models.markov_model import states
+from models.markov_model import states, transition_matrix
+from app.input_validation import validate_all
 from app.visualization import forecast_chart_data
 
 
@@ -43,6 +44,7 @@ with st.form("enrollment_forecast"):
 
 if submitted:
     try:
+        validate_all(initial_enrollment, transition_matrix, int(semesters_ahead))
         model = MarkovModel()
         model.fit(initial_enrollment)
         forecast = pd.DataFrame(
