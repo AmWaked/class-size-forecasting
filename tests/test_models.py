@@ -79,7 +79,7 @@ def test_markov_single_semester_calculation():
     )
 
 #Verifies the expected enrollment values for all states after one semester using the current transition matrix
-    def test_markov_one_semester_expected_values():
+def test_markov_one_semester_expected_values():
     model = MarkovModel()
     model.fit({"CS1": 100, "CS2": 80, "CS3": 50, "Done": 0})
 
@@ -90,7 +90,7 @@ def test_markov_single_semester_calculation():
     )
 
 #Verifies that zero initial enrollment remains zero across multiple forecasted semesters
-    def test_markov_zero_enrollment_remains_zero():
+def test_markov_zero_enrollment_remains_zero():
     model = MarkovModel()
     model.fit({"CS1": 0, "CS2": 0, "CS3": 0, "Done": 0})
 
