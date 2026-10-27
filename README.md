@@ -31,7 +31,8 @@ helper and growth-rate forecast are not connected to the Streamlit interface.
 
 Review `main` as the final submission branch. `gilberto` is my development and
 testing branch, where I check my changes before committing them to `main`; it
-is not a separate implementation or feature branch.
+is not a separate implementation or feature branch. `michele` contains QA and
+testing work; a pull request from that branch into `main` is open.
 
 ## Project structure
 
