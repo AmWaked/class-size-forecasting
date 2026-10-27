@@ -3,7 +3,7 @@
 import pytest
 
 from models.markov import MarkovModel
-from models.markov_model import forecast_enrollment
+from models.markov_model import forecast_enrollment, transition_matrix
 from models.simulation import SimulationModel
 
 
@@ -41,6 +41,29 @@ def test_markov_forecast_preserves_total_enrollment():
     )
 
     assert sum(next_semester) == pytest.approx(230)
+
+
+@pytest.mark.parametrize(
+    "transition_matrix",
+    [
+        [[2, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+        [[-0.1, 1.1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+        [[0.2, 0.7, 0, 0], [0, 0.2, 0.8, 0], [0, 0, 0.2, 0.8], [0, 0, 0, 1]],
+        [[float("nan"), 0.8, 0, 0], [0, 0.2, 0.8, 0], [0, 0, 0.2, 0.8], [0, 0, 0, 1]],
+    ],
+)
+def test_markov_forecast_rejects_invalid_transition_matrix(transition_matrix):
+    with pytest.raises(ValueError):
+        forecast_enrollment([100, 80, 50, 0], transition_matrix)
+
+
+@pytest.mark.parametrize(
+    "students",
+    [[100, -1, 50, 0], [100, float("nan"), 50, 0], [[100, 80], [50, 0]]],
+)
+def test_markov_forecast_rejects_invalid_enrollment_vector(students):
+    with pytest.raises(ValueError):
+        forecast_enrollment(students, transition_matrix)
 
 
 @pytest.mark.parametrize(
