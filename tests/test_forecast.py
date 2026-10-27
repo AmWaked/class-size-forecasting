@@ -64,7 +64,7 @@ def test_build_forecast_rejects_empty_and_duplicate_courses():
 
     
 #Verifies that forecast results for multiple courses are organized correctly for chart display
-    def test_forecast_chart_data_handles_multiple_courses():
+def test_forecast_chart_data_handles_multiple_courses():
     forecast_data = pd.DataFrame(
         [
             {"Course": "CS 101", "Semester": 1, "Projected enrollment": 110},
@@ -82,7 +82,7 @@ def test_build_forecast_rejects_empty_and_duplicate_courses():
     }
 
 #Verifies that calculated forecast values are passed correctly into the chart data used for display
-    def test_calculated_forecast_matches_chart_data():
+def test_calculated_forecast_matches_chart_data():
     enrollment_data = pd.DataFrame(
         {
             "Course": ["CS 101", "CS 102"],
@@ -97,4 +97,4 @@ def test_build_forecast_rejects_empty_and_duplicate_courses():
     assert chart_data.to_dict() == {
         "CS 101": {1: 110, 2: 121},
         "CS 102": {1: 60, 2: 72},
-    }
+}
