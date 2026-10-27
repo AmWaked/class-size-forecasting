@@ -61,3 +61,40 @@ def test_build_forecast_rejects_empty_and_duplicate_courses():
         build_forecast(empty, 1)
     with pytest.raises(ValueError, match="listed more than once"):
         build_forecast(duplicate, 1)
+
+    
+#Verifies that forecast results for multiple courses are organized correctly for chart display
+    def test_forecast_chart_data_handles_multiple_courses():
+    forecast_data = pd.DataFrame(
+        [
+            {"Course": "CS 101", "Semester": 1, "Projected enrollment": 110},
+            {"Course": "CS 101", "Semester": 2, "Projected enrollment": 121},
+            {"Course": "CS 102", "Semester": 1, "Projected enrollment": 80},
+            {"Course": "CS 102", "Semester": 2, "Projected enrollment": 88},
+        ]
+    )
+
+    chart_data = forecast_chart_data(forecast_data)
+
+    assert chart_data.to_dict() == {
+        "CS 101": {1: 110, 2: 121},
+        "CS 102": {1: 80, 2: 88},
+    }
+
+#Verifies that calculated forecast values are passed correctly into the chart data used for display
+    def test_calculated_forecast_matches_chart_data():
+    enrollment_data = pd.DataFrame(
+        {
+            "Course": ["CS 101", "CS 102"],
+            "Initial enrollment": [100, 50],
+            "Growth rate per semester (%)": [10, 20],
+        }
+    )
+
+    forecast = build_forecast(enrollment_data, 2)
+    chart_data = forecast_chart_data(forecast)
+
+    assert chart_data.to_dict() == {
+        "CS 101": {1: 110, 2: 121},
+        "CS 102": {1: 60, 2: 72},
+    }
