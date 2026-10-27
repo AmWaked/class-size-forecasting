@@ -65,3 +65,35 @@ def test_simulation_implements_interface():
     model = SimulationModel()
     assert hasattr(model, "fit")
     assert hasattr(model, "predict")
+
+
+#Verifies that a simple one semester Markov calculation moves students between states using the expected transition rates
+def test_markov_single_semester_calculation():
+    model = MarkovModel()
+    model.fit({"CS1": 100, "CS2": 0, "CS3": 0, "Done": 0})
+
+    forecast = model.predict(1)
+
+    assert [enrollment for _, _, enrollment in forecast] == pytest.approx(
+        [20.0, 80.0, 0.0, 0.0]
+    )
+
+#Verifies the expected enrollment values for all states after one semester using the current transition matrix
+    def test_markov_one_semester_expected_values():
+    model = MarkovModel()
+    model.fit({"CS1": 100, "CS2": 80, "CS3": 50, "Done": 0})
+
+    forecast = model.predict(1)
+
+    assert [enrollment for _, _, enrollment in forecast] == pytest.approx(
+        [20.0, 96.0, 74.0, 40.0]
+    )
+
+#Verifies that zero initial enrollment remains zero across multiple forecasted semesters
+    def test_markov_zero_enrollment_remains_zero():
+    model = MarkovModel()
+    model.fit({"CS1": 0, "CS2": 0, "CS3": 0, "Done": 0})
+
+    forecast = model.predict(2)
+
+    assert all(enrollment == 0 for _, _, enrollment in forecast)
