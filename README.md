@@ -1,51 +1,111 @@
-# Class Size Forecasting
+﻿# Class Size Forecasting
 
-Capstone project — forecasting per-course enrollment demand for the UNO CS degree plan using Markov chain and discrete event simulation models.
+A capstone project for forecasting enrollment in the UNO computer-science degree progression using a Markov chain model and an interactive Streamlit dashboard.
+
+## Overview
+
+This project models student movement across four states:
+
+- CS1
+- CS2
+- CS3
+- Done
+
+The current forecasting logic uses a fixed transition matrix in which:
+
+- 20% of students remain in their current course state
+- 80% move to the next state
+- students in Done remain in Done
+
+The app allows a user to enter current enrollment counts, choose a forecast horizon from 1 to 12 semesters, and view the projected enrollments in a table and chart.
+
+## Features
+
+- Interactive Streamlit interface for enrollment forecasting
+- Markov-chain forecast for course progression states
+- Input validation for:
+  - non-negative integer enrollment counts
+  - valid state names
+  - valid probability matrix rows
+  - forecast horizon bounds
+- Projected enrollment table and line chart output
+- Unit tests covering model behavior and validation rules
 
 ## Quick start
 
-```bash
-pip install -r requirements.txt
-streamlit run app/main.py
+### 1) Create and activate a virtual environment
+
+On Windows PowerShell:
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-The interface accepts initial enrollment counts for the CS1, CS2, CS3, and Done
-states. Choose a forecast horizon of 1–12 semesters to view the projected
-enrollment table and chart. The Markov forecast uses fixed probabilities: 20%
-of students remain in each course state, 80% advance to the next state, and
-students in Done remain there.
+### 2) Install dependencies
 
-## Release notes
+```powershell
+python -m pip install -r requirements.txt
+```
 
-The current submission includes a working Streamlit interface for entering
-initial enrollment in CS1, CS2, CS3, and Done, selecting a forecast horizon of
-1–12 semesters, and viewing projected enrollment in a table and chart. The
-Markov model uses fixed transition probabilities rather than probabilities
-estimated from historical enrollment data. Forecasts may be fractional because
-they represent expected enrollment.
+### 3) Run the app
 
-The discrete event simulation model is not implemented. The CSV ingestion
-helper and growth-rate forecast are not connected to the Streamlit interface.
+```powershell
+python -m streamlit run app/main.py
+```
 
-## Branches
+Then open the local URL shown in the terminal.
 
-Review `main` as the final submission branch. `gilberto` is my development and
-testing branch, where I check my changes before committing them to `main`; it
-is not a separate implementation or feature branch. `michele` contains QA and
-testing work; a pull request from that branch into `main` is open.
+## Example forecast
+
+Enter these starting values:
+
+| State | Enrollment |
+|---|---:|
+| CS1 | 100 |
+| CS2 | 80 |
+| CS3 | 50 |
+| Done | 0 |
+
+If you forecast 2 semesters, the expected projections are:
+
+| Semester | CS1 | CS2 | CS3 | Done |
+|---|---:|---:|---:|---:|
+| 1 | 20 | 96 | 74 | 40 |
+| 2 | 4 | 35.2 | 91.6 | 99.2 |
+
+The app expects whole-number, non-negative enrollment values and a forecast horizon between 1 and 12 semesters.
 
 ## Project structure
 
+```text
+app/            Streamlit app, validation helpers, visualization, and baseline forecast logic
+models/         Forecasting model implementations and transition logic
+requirements.txt  Python dependencies
+README.md        Project overview and setup guide
+RUNNING_THE_DEMO.md  Step-by-step demo instructions
+tests/           Automated pytest checks
+data/            Local data directory for project-specific files (not committed)
 ```
-app/          GUI, data ingestion, visualization
-models/       Forecasting model implementations (common interface)
-data/         Local data only — never committed (gitignored)
-tests/        pytest test suite
-docs/         Project documentation
-```
+
+## Model notes
+
+The repo currently includes:
+
+- a Markov model implementation in [models/markov.py](models/markov.py)
+- transition logic in [models/markov_model.py](models/markov_model.py)
+- a simple growth-rate baseline in [app/forecast.py](app/forecast.py)
+- a simulation model stub in [models/simulation.py](models/simulation.py)
+
+The primary interactive demo is the Streamlit app in [app/main.py](app/main.py).
 
 ## Running tests
 
-```bash
+```powershell
 pytest tests/ -v
 ```
+
+## Notes
+
+- Forecasted enrollment can be fractional because the model calculates expected values rather than integer counts.
+- The work is designed as a forecasting prototype and planning tool rather than a production-grade enrollment system.
