@@ -2,11 +2,20 @@
 
 import pandas as pd
 import streamlit as st
+import numpy as np
 
 from models.markov import MarkovModel
 from models.markov_model import states, transition_matrix
 from app.input_validation import validate_all
 from app.visualization import forecast_chart_data
+from app.forecast import build_forecast
+
+from app.markov_forecast import (
+    courses,
+    passing_rates,
+    build_transition_matrix,
+    predict_enrollment
+)
 
 
 st.set_page_config(page_title="Class Size Forecasting", page_icon="📚", layout="wide")
@@ -61,3 +70,84 @@ if submitted:
             forecast_chart_data(forecast, category_column="State"),
             y_label="Projected enrollment",
         )
+
+# Markov forecasting section
+st.divider()
+st.header("Markov Course Enrollment Forecast")
+
+st.write(
+    "Edit the progression probabilities for each course "
+    "to explore how they affect future enrollment."
+)
+
+# Display default probabilities in an editable table
+rate_rows = []
+
+for course, next_courses in passing_rates.items():
+    for next_course, rate in next_courses.items():
+        rate_rows.append({
+            "Current course": course,
+            "Next course": next_course,
+            "Probability": rate
+        })
+
+rates_df = pd.DataFrame(rate_rows)
+
+edited_rates = st.data_editor(
+    rates_df,
+    hide_index=True,
+    disabled=["Current course", "Next course"],
+    use_container_width=True
+)
+
+# Generate a Markov forecast using the edited probabilities
+if st.button("Generate Markov Forecast"):
+    try:
+        # Copy the default probabilities
+        updated_rates = {
+            course: next_courses.copy()
+            for course, next_courses in passing_rates.items()
+        }
+
+        # Replace defaults with the user's edited values
+        for _, row in edited_rates.iterrows():
+            course = row["Current course"]
+            next_course = row["Next course"]
+            rate = float(row["Probability"])
+
+            if not np.isfinite(rate) or not 0 <= rate <= 1:
+                raise ValueError("Probabilities must be between 0 and 1.")
+
+            updated_rates[course][next_course] = rate
+
+        # Rebuild the transition matrix
+        matrix = build_transition_matrix(updated_rates)
+
+
+        st.success("Transition matrix updated successfully!")
+        st.dataframe(
+            pd.DataFrame(matrix, index=courses, columns=courses)
+        )
+
+        # Hypothetical enrollment for the 11 courses
+        students = np.array([100, 50, 30, 40, 25, 20, 15, 10, 12, 10, 8])
+
+        # Calculate enrollment projections for four semesters
+        predictions = predict_enrollment(
+            students, matrix, semesters_ahead=4
+        )
+
+        # Organize the predictions into a table
+        forecast_df = pd.DataFrame(predictions, columns=courses)
+        forecast_df.index = range(1, 5)
+        forecast_df.index.name = "Semester"
+
+        # Display the enrollment forecast
+        st.subheader("Markov Enrollment Forecast")
+        st.dataframe(forecast_df)
+
+        # Display the forecast as a line chart
+        st.line_chart(forecast_df)
+
+    except (ValueError, TypeError) as error:
+        st.error(str(error))
