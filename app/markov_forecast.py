@@ -61,17 +61,27 @@ def build_transition_matrix(rates):
                 current_index = courses.index(course)
                 next_index = courses.index(next_course)
 
-                numpy_matrix[current_index, next_index] =rates.get(
-                    course, {}
-                ).get(next_course, 0.0)
+                rate = rates.get(course, {}).get(next_course, 0.0)
+                #check rate before assigning to the matrix
+                if (
+                    isinstance(rate, (bool, np.bool_))
+                    or not isinstance(rate, (int, float, np.integer, np.floating))
+                    or not 0 <= rate <= 1
+                ):
+                    raise ValueError(
+                        f"Probability for {course} -> {next_course} must be "
+                        "a finite number between 0 and 1."
+                    )
+                numpy_matrix[current_index, next_index] = rate
 
     # CALCULATE THE PROBABILITY OF REMAINING IN  EACH COURSE
     # The remaining probability represents staying in the same course state
     remaining_probability = 1 - np.sum(numpy_matrix, axis=1)
 
     #check that no course has probabilities totaling more than 100%
-    if np.any(remaining_probability < -1e-9):
-        raise ValueError("Course transition probabilities cannot exceed 1.")
+    for course, remaining in zip(courses, remaining_probability):
+        if remaining < -1e-9:
+            raise ValueError(f"Outgoing probabilities for {course} cannot exceed 1.")
 
     # Replace small floating-point rounding errors with zero
     remaining_probability = np.where(
