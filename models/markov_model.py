@@ -15,23 +15,25 @@ transition_matrix = (
 def forecast_enrollment(students, transition_matrix):
     """Forecast next-semester enrollment using NumPy."""
 
-    # Check that the matrix matches the number of states
-    if not students or len(transition_matrix) != len(students):
+    try:
+        student_vector = np.asarray(students, dtype=float)
+        transition_array = np.asarray(transition_matrix, dtype=float)
+    except (TypeError, ValueError):
+        raise ValueError("Enrollment and transition probabilities must be numeric.") from None
+
+    if student_vector.ndim != 1 or student_vector.size == 0:
+        raise ValueError("Enrollment must contain one value per state.")
+    if not np.all(np.isfinite(student_vector)) or np.any(student_vector < 0):
+        raise ValueError("Enrollment must contain finite, non-negative values.")
+
+    state_count = student_vector.size
+    if transition_array.shape != (state_count, state_count):
         raise ValueError("The transition matrix must match the enrollment states.")
 
-    # Check that the transition matrix is square
-    for row in transition_matrix:
-        if len(row) != len(students):
-            raise ValueError("The transition matrix must be square.")
+    if not np.all(np.isfinite(transition_array)) or np.any(transition_array < 0) or np.any(transition_array > 1):
+        raise ValueError("Transition probabilities must be finite values between 0 and 1.")
+    if not np.allclose(transition_array.sum(axis=1), 1.0):
+        raise ValueError("Each transition matrix row must sum to 1.")
 
-    # Convert the student list into a NumPy array
-    student_vector = np.array(students)
-
-    # Convert the transition matrix into a NumPy array
-    transition_array = np.array(transition_matrix)
-
-    # Multiply the student vector by the transition matrix
     next_semester = student_vector @ transition_array
-
-    # Return the predicted enrollment as a Python list
     return next_semester.tolist()
