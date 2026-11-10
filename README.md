@@ -94,10 +94,15 @@ The repo currently includes:
 
 - a Markov model implementation in [models/markov.py](models/markov.py)
 - transition logic in [models/markov_model.py](models/markov_model.py)
-- a simple growth-rate baseline in [app/forecast.py](app/forecast.py)
+- a standalone per-course growth-rate baseline in [app/forecast.py](app/forecast.py)
+- a CSV loading helper with formula-injection sanitization in [app/ingestion.py](app/ingestion.py)
 - a simulation model stub in [models/simulation.py](models/simulation.py)
 
-The primary interactive demo is the Streamlit app in [app/main.py](app/main.py).
+The primary interactive demo is the Streamlit app in [app/main.py](app/main.py). The growth-rate baseline and CSV helper are not currently connected to the UI. The simulation model is not implemented.
+
+## Release notes
+
+See [RELEASE_NOTES.md](RELEASE_NOTES.md) for release highlights and known limitations.
 
 ## Running tests
 
