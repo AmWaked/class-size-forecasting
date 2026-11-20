@@ -1,5 +1,12 @@
 import numpy as np
 
+#Names of the 9 forecast output columns
+forecast_states = [
+    "CS1", "CS2", "CS3",
+    "CS4", "CS6",
+    "CS5", "CS7",
+    "Done CS6", "Done CS7",
+]
 #original four-state example
 states = ["CS1", "CS2", "CS3", "Done"]
 
@@ -34,6 +41,8 @@ branch2_matrix = np.array([
 
 #forecast 4 semesters automatically
 def forecast_branches(semesters):
+    """Return a forecast array with 9 columns for the requested semesters"""
+
     original = students.copy()
     branch1 = np.zeros(3)
 
@@ -61,16 +70,18 @@ def forecast_branches(semesters):
         #update the original chain
         original = original_next
 
-        forecast_results.append({
-            "semester" : semester,
-            "branch1": branch1.copy(),
-            "branch2": branch2.copy(),
-        })
-        print(f"\nSemester {semester}")
-        print("Branch 1: ", branch1)
-        print("Branch 2: ", branch2)
+        combined_forecast = np.concatenate((
+            original[:3],
+            branch1[:2],
+            branch2[:2],
+            branch1[2:],
+            branch2[2:]
+        ))
 
-    return forecast_results
+        forecast_results.append(combined_forecast.copy())
+
+    return np.array(forecast_results)
 #run the forecast for 4 semesters
-results = forecast_branches(4)
-print("Saved semesters:", len(results))
+if __name__ == "__main__":
+    results = forecast_branches(4)
+    print("Saved semesters:", len(results))
