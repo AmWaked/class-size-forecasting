@@ -39,12 +39,31 @@ enrollment and viewing the results.
 
 6. Open the local URL printed in the terminal by Streamlit.
 
+## Try the Milestone 3 branching forecast
+
+Under **Milestone 3 — Branching Markov Forecast**, set **Semesters to
+forecast** to `4` (the default) and click **Generate Branching Forecast**.
+
+The app displays a table and chart with nine columns. Expected first two
+rows:
+
+| Semester |   CS1 |    CS2 |   CS3 | CS4 | CS6 |  CS5 | CS7 | Done CS6 | Done CS7 |
+| -------- | ----: | -----: | ----: | --: | --: | ---: | --: | -------: | -------: |
+| 1        |    25 |    105 |    90 |  80 |   0 |   80 |   0 |        0 |        0 |
+| 2        |  6.25 |  50.25 |  91.5 | 104 |  48 |   84 |  68 |        0 |        0 |
+
+Each CS3 completion enters both branches, so row values sum to more than
+300. Done CS6 and Done CS7 are branch-completion counts not course
+enrollments. Transition probabilities are fixed.
+
+Change the semester count to 1 or 12 and re-run to verify the table shows
+the correct number of rows.
+
 ## Try a Milestone 2 forecast
 
-Under **Milestone 2 — Course Enrollment Forecast**, expand **Starting
-enrollment by course** to view the initial counts. The sample uses 320
-synthetic students across 11 courses and forecasts four semesters. The
-default probabilities are hypothetical.
+Expand **Milestone 2 — Course Enrollment Forecast** to see the 11-course
+model. The sample uses 320 synthetic students across 11 courses and
+forecasts four semesters. The default probabilities are hypothetical.
 
 Click **Generate Markov Forecast**. The app displays the transition matrix,
 forecast table, and chart. In semester 1, the expected enrollment is 30
@@ -83,3 +102,4 @@ app displays the projections in a table and chart. Expected projections are:
 The input counts must be non-negative whole numbers. The forecast horizon
 must be between 1 and 12 semesters. Projected enrollment may be fractional
 because the Markov model calculates expected values.
+
