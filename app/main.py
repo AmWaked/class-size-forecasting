@@ -17,6 +17,8 @@ from app.markov_forecast import (
     predict_enrollment
 )
 
+from models.markov_branching_practice import forecast_branches, forecast_states
+
 
 st.set_page_config(page_title="Class Size Forecasting", page_icon="📚", layout="wide")
 st.title("Class Size Forecasting")
@@ -75,85 +77,127 @@ with st.expander("Milestone 1 — Four-State Baseline", expanded=False):
             )
 
 # --- milestone 2: 11-course markov forecast ---
-st.divider()
-st.header("Milestone 2 — Course Enrollment Forecast")
+with st.expander("Milestone 2 — Course Enrollment Forecast", expanded=False):
+    st.write(
+        "Forecast enrollment across 11 UNO CS courses using a prerequisite-based "
+        "Markov chain. Edit the progression probabilities below and generate "
+        "a forecast to see how changes affect projected enrollment."
+    )
 
-st.write(
-    "Forecast enrollment across 11 UNO CS courses using a prerequisite-based "
-    "Markov chain. Edit the progression probabilities below and generate "
-    "a forecast to see how changes affect projected enrollment."
-)
+    #synthetic starting enrollment used for the proof of concept
+    #not derived from UNO records
+    default_students = [100, 50, 30, 40, 25, 20, 15, 10, 12, 10, 8]
+    num_semesters = 4
 
-#synthetic starting enrollment used for the proof of concept
-#not derived from UNO records
-default_students = [100, 50, 30, 40, 25, 20, 15, 10, 12, 10, 8]
-num_semesters = 4
+    st.caption(
+        f"Starting enrollment is synthetic (total {sum(default_students)} students "
+        f"across {len(courses)} courses). The forecast runs {num_semesters} semesters."
+    )
 
-st.caption(
-    f"Starting enrollment is synthetic (total {sum(default_students)} students "
-    f"across {len(courses)} courses). The forecast runs {num_semesters} semesters."
-)
-
-#show the starting counts so the viewer knows what goes in
-with st.expander("Starting enrollment by course"):
+    #show the starting counts so the viewer knows what goes in
+    st.write("Starting enrollment by course")
     st.dataframe(
         pd.DataFrame({"Course": courses, "Students": default_students}),
         hide_index=True,
         use_container_width=True,
     )
 
-#build the editable probability table from the defaults
-rate_rows = []
-for course, next_courses in passing_rates.items():
-    for next_course, rate in next_courses.items():
-        rate_rows.append({
-            "Current course": course,
-            "Next course": next_course,
-            "Probability": rate
-        })
+    #build the editable probability table from the defaults
+    rate_rows = []
+    for course, next_courses in passing_rates.items():
+        for next_course, rate in next_courses.items():
+            rate_rows.append({
+                "Current course": course,
+                "Next course": next_course,
+                "Probability": rate
+            })
 
-rates_df = pd.DataFrame(rate_rows)
+    rates_df = pd.DataFrame(rate_rows)
 
-edited_rates = st.data_editor(
-    rates_df,
-    hide_index=True,
-    disabled=["Current course", "Next course"],
-    use_container_width=True
+    edited_rates = st.data_editor(
+        rates_df,
+        hide_index=True,
+        disabled=["Current course", "Next course"],
+        use_container_width=True
+    )
+
+    if st.button("Generate Markov Forecast"):
+        try:
+            #copy defaults then overlay edits
+            updated_rates = {
+                course: next_courses.copy()
+                for course, next_courses in passing_rates.items()
+            }
+
+            for _, row in edited_rates.iterrows():
+                course = row["Current course"]
+                next_course = row["Next course"]
+                rate = float(row["Probability"])
+
+                if not np.isfinite(rate) or rate < 0 or rate > 1:
+                    raise ValueError(
+                        f"Probability for {course} -> {next_course} must be "
+                        f"between 0 and 1 (got {rate})."
+                    )
+
+                updated_rates[course][next_course] = rate
+
+            matrix = build_transition_matrix(updated_rates)
+
+            st.success("Transition matrix rebuilt.")
+            st.dataframe(
+                pd.DataFrame(matrix, index=courses, columns=courses)
+            )
+
+            students = np.array(default_students)
+            predictions = predict_enrollment(students, matrix, semesters_ahead=num_semesters)
+
+            forecast_df = pd.DataFrame(predictions, columns=courses)
+            forecast_df.index = range(1, num_semesters + 1)
+            forecast_df.index.name = "Semester"
+
+            st.subheader("Projected Enrollment")
+            st.dataframe(forecast_df)
+            st.line_chart(forecast_df)
+
+        except (ValueError, TypeError) as error:
+            st.error(str(error))
+
+# --- milestone 3: branching markov forecast ---
+st.divider()
+st.header("Milestone 3 — Branching Markov Forecast")
+
+st.write(
+    "Forecast enrollment using a branching Markov chain. Students progress "
+    "through CS1, CS2, and CS3. Each student completing CS3 then enters "
+    "both branches: CS4 → CS6 and CS5 → CS7."
 )
 
-if st.button("Generate Markov Forecast"):
+#starting enrollment: 100 students in each of CS1, CS2, CS3
+#transition probabilities are fixed for this milestone
+st.caption(
+    "Transition probabilities are fixed. Starting enrollment is 100 students "
+    "in each of CS1, CS2, and CS3. Each student completing CS3 enters both "
+    "branches, so the row values can sum to more than the starting population. "
+    "Done CS6 and Done CS7 are separate branch-completion counts, not course "
+    "enrollments."
+)
+
+m3_semesters = st.number_input(
+    "Semesters to forecast",
+    min_value=1,
+    max_value=12,
+    value=4,
+    step=1,
+    key="m3_semesters",
+)
+
+if st.button("Generate Branching Forecast"):
     try:
-        #copy defaults then overlay edits
-        updated_rates = {
-            course: next_courses.copy()
-            for course, next_courses in passing_rates.items()
-        }
+        results = forecast_branches(int(m3_semesters))
 
-        for _, row in edited_rates.iterrows():
-            course = row["Current course"]
-            next_course = row["Next course"]
-            rate = float(row["Probability"])
-
-            if not np.isfinite(rate) or rate < 0 or rate > 1:
-                raise ValueError(
-                    f"Probability for {course} -> {next_course} must be "
-                    f"between 0 and 1 (got {rate})."
-                )
-
-            updated_rates[course][next_course] = rate
-
-        matrix = build_transition_matrix(updated_rates)
-
-        st.success("Transition matrix rebuilt.")
-        st.dataframe(
-            pd.DataFrame(matrix, index=courses, columns=courses)
-        )
-
-        students = np.array(default_students)
-        predictions = predict_enrollment(students, matrix, semesters_ahead=num_semesters)
-
-        forecast_df = pd.DataFrame(predictions, columns=courses)
-        forecast_df.index = range(1, num_semesters + 1)
+        forecast_df = pd.DataFrame(results, columns=forecast_states)
+        forecast_df.index = range(1, int(m3_semesters) + 1)
         forecast_df.index.name = "Semester"
 
         st.subheader("Projected Enrollment")
@@ -162,3 +206,4 @@ if st.button("Generate Markov Forecast"):
 
     except (ValueError, TypeError) as error:
         st.error(str(error))
+
