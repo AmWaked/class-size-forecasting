@@ -47,11 +47,27 @@ Students completing CS3 enter both branches, allowing the model to forecast enro
 
 The model produces forecasts for seven courses (CS1, CS2, CS3, CS4, CS6, CS5, and CS7) and two cumulative branch-completion states (Done CS6 and Done CS7).
 
-#### Current Limitations — Pending QA Review
+#### QA Testing and Validation
 
-Milestone 3 uses synthetic starting enrollment and fixed transition probabilities. The model is a proof of concept rather than a validated prediction of actual UNO enrollment.
+The Milestone 3 branching forecast was tested using forecast horizons of 1, 4, and 12 semesters. The application returned one forecast row per requested semester and nine forecast values per row in the expected order: CS1, CS2, CS3, CS4, CS6, CS5, CS7, Done CS6, and Done CS7.
 
-Additional testing, validation, and documentation of model limitations are assigned to Michele. This section will be updated with the verified findings before final submission.
+The expected values for the first two semesters of the four-semester forecast were verified:
+
+- Semester 1: 25, 105, 90, 80, 0, 80, 0, 0, 0
+- Semester 2: 6.25, 50.25, 91.5, 104, 48, 84, 68, 0, 0
+
+Automated tests also verify the forecast dimensions, course-label ordering, expected calculations, and that forecast values remain finite and non-negative.
+
+The Streamlit integration was manually tested to confirm that forecast results are displayed in both the table and line chart.
+
+#### Model Assumptions and Limitations
+
+- Starting enrollment is synthetic and fixed at 100 students each in CS1, CS2, and CS3.
+- Transition probabilities are fixed and hypothetical rather than estimated from historical UNO enrollment data.
+- Each student completing CS3 enters both modeled branches, so row totals can exceed the original 300 students.
+- Done CS6 and Done CS7 represent cumulative branch-completion counts rather than course enrollment.
+- The Streamlit interface restricts forecasts to 1–12 semesters; the forecasting function itself relies on the interface to enforce this range.
+- The model remains a proof of concept and should not be interpreted as a validated prediction of actual UNO enrollment.
 
 ### Code Milestone 2 — November 2026
 
